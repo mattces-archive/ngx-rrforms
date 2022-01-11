@@ -9,6 +9,14 @@ _**Reactive**_ Reactive Forms for Angular 2+. Self-reactivity and more (soon).
   - [conditional validators](#conditional-validators)
 - [**API** documentation](#api)
 
+## INSTALLATION
+
+Run this command:
+
+```
+npm i --save ngx-rrforms
+```
+
 ## **OVERVIEW**
 
 This library aims to improve the reactivity of Angular's inbuilt reactive forms by providing a simple utility in the
