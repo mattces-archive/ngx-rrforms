@@ -140,7 +140,7 @@ This is how it looks live:\
 
 ## CONDITIONALS
 
-- ### `RRFormControl.disable(...logicFunctions: RRConditionalLogic): RRFormConditionalInterface`
+- ### `RRFormControl.disable().when(...logicFunctions: RRConditionalLogic): RRFormConditionalInterface`
 
 **param** `logicFunctions: ((value: any) => boolean)[]`: an unpacked array of functions of boolean return type.\
 The `value: any` param is the value of the `control` passed into the constructor.
@@ -148,7 +148,7 @@ The `value: any` param is the value of the `control` passed into the constructor
 - conditionally disablse the specified control if any of the functions passed in return true on form value change
 - re-enablse the control if any of the functions passed in return false on form value change
 
-- ### `RRFormControl.validate(...logic: RRConditionalValidatorLogic): RRFormConditionalInterface`:
+- ### `RRFormControl.validate().when(...logic: RRConditionalValidatorLogic): RRFormConditionalInterface`:
 
 **param** `logic: {logic: ((value: any) => boolean)[], validators: ValidatorFn[]}[]`: an unpacked array of objects, each
 containing an array of boolean return type functions in the `logic` attribute and an array of `ValidatorFn`
