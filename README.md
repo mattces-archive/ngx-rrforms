@@ -112,7 +112,7 @@ export class AppComponent implements OnDestroy {
 ```
 
 In the above code, the `surname` control will be disabled on the same condition as in the previous example, but in
-addition to that, if the length of the `name` control's value is greater than§ 5, it will add the `maxlength`
+addition to that, if the length of the `name` control's value is greater than 5, it will add the `maxlength`
 and `required` validators to the `surname` control.
 
 This is how it looks live:\
@@ -228,7 +228,7 @@ The `value: any` param is the value emitted by the observable specified by the `
 - conditionally disables the specified control if any of the functions passed in return true on observable emission
 - re-enables the control if any of the functions passed in return false on observable emission
 
-- ### `RRFormControl.validate().when(eventName: string, ...logic: RRConditionalValidatorLogic): RRFormConditionalInterface`:
+- ### `RRFormControl.validate().whenEvent(eventName: string, ...logic: RRConditionalValidatorLogic): RRFormConditionalInterface`:
 
 **param** `eventName: string`: the name of the event (added using `RRForm.addObservable`) to which the control should
 react.\
