@@ -1,4 +1,5 @@
 import {ValidatorFn} from "@angular/forms";
+import {Observable} from "rxjs";
 
 export type RRFormConditionalLogic = ((value: any) => boolean)[];
 export type RRFormConditionalValidatorLogic = { logic: RRFormConditionalLogic, validators: ValidatorFn[] }[];
@@ -15,7 +16,11 @@ export type RRFormControl = {
 export type RRFormConditionalInterface<T extends RRFormDisable | RRFormValidate> = {
   when: T extends RRFormValidate
     ? (...conditionalLogic: RRFormConditionalValidatorLogic) => void
-    : (...conditionalLogic: RRFormConditionalLogic) => void
+    : (...conditionalLogic: RRFormConditionalLogic) => void,
+
+  whenEvent: T extends RRFormValidate
+    ? (eventName: string, ...conditionalLogic: RRFormConditionalValidatorLogic) => void
+    : (eventName: string, ...conditionalLogic: RRFormConditionalLogic) => void
 }
 
 export type RRFormActions = 'disable' | 'validate';

@@ -25,12 +25,12 @@ export class RRForm {
   }
 
   private evaluateConditionalLogic =
-    (action: RRFormActions, logicFunctions: RRFormConditionalLogic | RRFormConditionalValidatorLogic):
+    (action: RRFormActions, logicFunctions: RRFormConditionalLogic | RRFormConditionalValidatorLogic, eventValue: any):
       { add: ValidatorFn[], remove: ValidatorFn[] } | boolean => {
       switch (action) {
         case "disable":
           for (const fn of logicFunctions as RRFormConditionalLogic)
-            if (fn(this._control.value))
+            if (fn(eventValue))
               return true;
           return false;
         case "validate":
@@ -38,7 +38,7 @@ export class RRForm {
           const validatorsToBeAdded = new Set<ValidatorFn>();
           for (const logic of logicFunctions as RRFormConditionalValidatorLogic) {
             for (let fn of logic.logic)
-              if (fn(this._control.value)) logic.validators.forEach(validator => validatorsToBeAdded.add(validator));
+              if (fn(eventValue)) logic.validators.forEach(validator => validatorsToBeAdded.add(validator));
               else {
                 logic.validators.forEach(validator => validatorsToBeRemoved.add(validator));
                 break;
@@ -49,8 +49,9 @@ export class RRForm {
     }
 
   private runLogic(eventName: string, eventValue: any) {
-    this._logic.forEach((logicObject) => {
-      let evaluated = this.evaluateConditionalLogic(logicObject.action, logicObject.logicFunctions);
+    const executeLogic = (logicObject?: RRLogic) => {
+      if (!logicObject) return;
+      let evaluated = this.evaluateConditionalLogic(logicObject.action, logicObject.logicFunctions, eventValue);
       if (typeof evaluated === 'boolean') {
         let control = this._control.get(logicObject.path);
 
@@ -69,10 +70,17 @@ export class RRForm {
             control?.removeValidators(validator);
 
         control?.updateValueAndValidity({emitEvent: false});
-
       }
-    })
+    }
+
+    if (eventName == 'valueChanged')
+      this._logic.forEach((logicObject) =>
+        executeLogic(logicObject)
+      )
+    else
+      executeLogic(this._observableLogic.find(obj => obj.name === eventName)?.logic)
   }
+
 
   /**
    * Returns object with functions to add conditional logic to a child control.
@@ -86,17 +94,34 @@ export class RRForm {
         logicFunctions: conditionalLogic
       })
     }
+    const whenEvent = (action: RRFormActions, eventName: string, ...conditionalLogic: RRFormConditionalLogic | RRFormConditionalValidatorLogic) => {
+      this._observableLogic.push({
+        name: eventName,
+        logic: {
+          path: typeof path === 'string' ? path : path.join('.'),
+          action: action,
+          logicFunctions: conditionalLogic
+        }
+      });
+    }
+
     const disable = () =>
-      ({when: (...conditionalLogic: RRFormConditionalLogic) => when('disable', ...conditionalLogic)}) as RRFormConditionalInterface<RRFormDisable>;
+      ({
+        when: (...conditionalLogic: RRFormConditionalLogic) => when('disable', ...conditionalLogic),
+        whenEvent: (eventName: string, ...conditionalLogic: RRFormConditionalLogic) => whenEvent('disable', eventName, ...conditionalLogic)
+      });
     const validate = () =>
-      ({when: (...conditionalLogic: RRFormConditionalValidatorLogic) => when('validate', ...conditionalLogic)}) as RRFormConditionalInterface<RRFormValidate>;
+      ({
+        when: (...conditionalLogic: RRFormConditionalValidatorLogic) => when('validate', ...conditionalLogic),
+        whenEvent: (eventName: string, ...conditionalLogic: RRFormConditionalValidatorLogic) => whenEvent('validate', eventName, ...conditionalLogic)
+      });
     return {
       disable: disable,
       validate: validate,
     }
   }
 
-  private addObservable(eventName: string, observable: Observable<any>):
+  public addObservable(eventName: string, observable: Observable<any>):
     void {
     if (this._observables.includes(observable))
       return;
@@ -106,23 +131,8 @@ export class RRForm {
     }))
   }
 
-  /*
-    public removeObservable(observable: Observable<any>):
-      void {
-      if (!
-        this._observables.includes(observable)
-      )
-        return;
-
-      const index = this._observables.indexOf(observable);
-      this._subscriptions[index].unsubscribe()
-
-      this._observables.splice(index, 1);
-      this._subscriptions.splice(index, 1);
-    }*/
-
   private _logic: RRLogic[] = [];
-
+  private _observableLogic: { name: string, logic: RRLogic }[] = []
   private _changeEvent: EventEmitter<[string, any]>;
   private _observables: Observable<any>[] = [];
   private _subscriptions: Subscription[] = [];
@@ -131,3 +141,21 @@ export class RRForm {
     this._subscriptions.forEach(sub => sub?.unsubscribe());
   }
 }
+
+
+/*
+  public removeEvent(observable: Observable<any>):
+    void {
+    if (!
+      this._observables.includes(observable)
+    )
+      return;
+
+    const index = this._observables.indexOf(observable);
+    this._subscriptions[index].unsubscribe()
+
+    this._observables.splice(index, 1);
+    this._subscriptions.splice(index, 1);
+  }
+ */
+
